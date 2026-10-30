@@ -298,9 +298,7 @@ renderAll();
  document.getElementById('startQuiz').onclick=window.startQuiz;
  // Keep school exam labels clear in results and progress.
  const labelsMap={school_general:'School General Exam',school_math:'School Mathematics Exam',school_science:'School Science Exam',school_english:'School English Exam'};
- const oldExamLabels=window.examLabels||{};
- Object.assign(oldExamLabels,labelsMap);
- window.examLabels=oldExamLabels;
+ Object.assign(examLabels,labelsMap);
 })();
 </script>
 </body></html>
