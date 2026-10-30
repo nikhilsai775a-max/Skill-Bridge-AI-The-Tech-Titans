@@ -186,4 +186,121 @@ buildRoadmap=function(){originalBuildRoadmap();const r=state.result;if(r&&$('roa
 const originalRenderProgress=renderProgress;
 renderProgress=function(){originalRenderProgress();const r=state.result;if(r&&$('skillBars'))$('skillBars').innerHTML=(r.skillScores||[]).map(t=>`<div class="progressrow"><span>${escapeHTML(t.name)}</span><div class="bar"><i style="width:${t.score}%"></i></div><b>${t.score}%</b></div>`).join('')||$('skillBars').innerHTML;};
 renderAll();
-</script></body></html>
+</script>
+<script>
+/* Education-level-aware exam choices: school students receive a school-level assessment. */
+(function(){
+ const levelEl=document.getElementById('level'), courseEl=document.getElementById('course'), examEl=document.getElementById('examType');
+ if(!levelEl||!courseEl||!examEl)return;
+ const schoolOptions=[
+  ['school_general','School General Exam'],
+  ['school_math','School Mathematics Exam'],
+  ['school_science','School Science Exam'],
+  ['school_english','School English Exam']
+ ];
+ const optionSets={
+  school:schoolOptions,
+  intermediate:[['semester','Intermediate Board / Term Exam'],['eapcet','EAPCET / JEE Foundation'],['general','General Skills Discovery']],
+  diploma:[['semester','Diploma Semester Examination'],['coding','Technical / Coding Skills Test'],['general','General Skills Discovery']],
+  ug:[['semester','Semester / University Examination'],['coding','Coding Skills Assessment'],['placement','Placement Readiness Test'],['gate','GATE / Technical Competitive Exam'],['general','General Skills Discovery']],
+  pg:[['semester','Postgraduate Semester Examination'],['coding','Advanced Coding Skills Assessment'],['placement','Career Readiness Test'],['gate','GATE / Technical Competitive Exam'],['general','General Skills Discovery']],
+  career:[['coding','Professional Skills Assessment'],['placement','Career Readiness Test'],['general','General Skills Discovery']]
+ };
+ const courseSets={
+  school:[['general','General School'],['science','Science'],['commerce','Commerce'],['arts','Arts / Humanities']],
+  intermediate:[['science','MPC / Science'],['science','BiPC / Biology'],['commerce','CEC / Commerce'],['arts','Arts / Humanities']],
+  diploma:[['mechanical','Mechanical'],['ece','Electronics / ECE'],['cse','Computer / IT'],['general','Other diploma']],
+  ug:[['cse','Computer Science / IT'],['ece','Electronics / ECE'],['mechanical','Mechanical / Core engineering'],['commerce','Commerce / Finance'],['science','Science / Mathematics'],['arts','Arts / Humanities'],['general','Other / not sure yet']],
+  pg:[['cse','Computer Science / IT'],['ece','Electronics / ECE'],['mechanical','Engineering'],['commerce','Commerce / Finance'],['science','Science / Mathematics'],['arts','Arts / Humanities'],['general','Other']],
+  career:[['cse','Technology / IT'],['ece','Electronics'],['mechanical','Engineering'],['commerce','Business / Finance'],['science','Science'],['arts','Arts / Humanities'],['general','Other']]
+ };
+ function setOptions(el,items,selected){
+  const old=selected||el.value;el.innerHTML=items.map(([v,t])=>'<option value="'+v+'">'+t+'</option>').join('');
+  if(items.some(x=>x[0]===old))el.value=old;
+ }
+ function syncEducation(){
+  const level=levelEl.value;
+  const oldExam=examEl.value,oldCourse=courseEl.value;
+  setOptions(courseEl,courseSets[level]||courseSets.ug,level==='school'?'general':oldCourse);
+  setOptions(examEl,optionSets[level]||optionSets.ug,level==='school'?'school_general':oldExam);
+  const semLabel=document.querySelector('label[for="semester"]');
+  const semInput=document.getElementById('semester');
+  if(semLabel&&semInput){
+   semLabel.textContent=level==='school'?'Current class / grade (optional)':'Current year / semester (optional)';
+   semInput.placeholder=level==='school'?'e.g. Class 8':'e.g. B.Tech 2nd year, 3rd semester';
+  }
+ }
+ levelEl.addEventListener('change',syncEducation);
+ syncEducation();
+ // School questions are intentionally age-appropriate general school-level questions.
+ const schoolBank={
+  school_general:[
+   ['What is 25% of 200?',['25','40','50','75'],2,'Mathematics'],
+   ['What is the plural of “child”?',['Childs','Children','Childes','Childrens'],1,'English'],
+   ['Which planet is known as the Red Planet?',['Venus','Mars','Jupiter','Mercury'],1,'Science'],
+   ['What is 12 × 8?',['86','92','96','108'],2,'Mathematics'],
+   ['Choose the correct spelling.',['Beautifull','Beutiful','Beautiful','Beautifal'],2,'English'],
+   ['Which gas do plants absorb during photosynthesis?',['Oxygen','Carbon dioxide','Nitrogen','Hydrogen'],1,'Science'],
+   ['What is the next number: 3, 6, 9, 12, __?',['13','14','15','18'],2,'Logical reasoning'],
+   ['How many sides does a hexagon have?',['5','6','7','8'],1,'Mathematics'],
+   ['Which organ pumps blood around the human body?',['Lungs','Brain','Heart','Kidney'],2,'Science'],
+   ['Choose the opposite of “ancient”.',['Old','Modern','Historic','Past'],1,'English']
+  ],
+  school_math:[
+   ['What is 15 + 27?',['32','42','52','62'],1,'Arithmetic'],
+   ['What is 9 × 7?',['56','63','72','79'],1,'Arithmetic'],
+   ['What is 3/4 of 20?',['5','10','15','18'],2,'Fractions'],
+   ['Solve: x + 8 = 15.',['5','6','7','8'],2,'Algebra'],
+   ['What is the perimeter of a square with side 5 cm?',['10 cm','15 cm','20 cm','25 cm'],2,'Geometry'],
+   ['Which is the smallest prime number?',['0','1','2','3'],2,'Number systems'],
+   ['What is 100 divided by 4?',['20','25','30','40'],1,'Arithmetic'],
+   ['How many degrees are in a right angle?',['45','90','180','360'],1,'Geometry'],
+   ['What is 2³?',['4','6','8','9'],2,'Powers'],
+   ['Convert 0.5 to a fraction.',['1/4','1/2','2/3','3/4'],1,'Fractions']
+  ],
+  school_science:[
+   ['Which part of a plant absorbs water?',['Leaf','Flower','Root','Stem'],2,'Biology'],
+   ['Water freezes at what temperature (°C)?',['0','10','50','100'],0,'Physics'],
+   ['Which gas do humans need to breathe?',['Carbon dioxide','Oxygen','Helium','Hydrogen'],1,'Biology'],
+   ['Which force pulls objects toward Earth?',['Friction','Magnetism','Gravity','Tension'],2,'Physics'],
+   ['What is the chemical symbol for water?',['CO₂','H₂O','O₂','NaCl'],1,'Chemistry'],
+   ['Which is a source of renewable energy?',['Coal','Petrol','Solar','Diesel'],2,'Environmental science'],
+   ['Which organ helps us breathe?',['Heart','Lungs','Stomach','Kidney'],1,'Biology'],
+   ['Which state of matter has a fixed shape?',['Gas','Liquid','Solid','Vapour'],2,'Chemistry'],
+   ['The Sun is a:',['Planet','Star','Satellite','Comet'],1,'Astronomy'],
+   ['Which material is attracted by a magnet?',['Wood','Plastic','Iron','Paper'],2,'Physics']
+  ],
+  school_english:[
+   ['Choose the correct article: “___ apple a day”.',['A','An','The','No article'],1,'Grammar'],
+   ['What is the past tense of “go”?',['Goed','Gone','Went','Going'],2,'Grammar'],
+   ['Choose the synonym of “happy”.',['Angry','Joyful','Tired','Afraid'],1,'Vocabulary'],
+   ['Choose the antonym of “brave”.',['Courageous','Fearful','Strong','Bold'],1,'Vocabulary'],
+   ['Which is a complete sentence?',['Because it rained','Running quickly','The bell rang.','After school'],2,'Sentence structure'],
+   ['Choose the correct spelling.',['Necessary','Neccessary','Necesary','Necessery'],0,'Vocabulary'],
+   ['Identify the noun: “The dog barked loudly.”',['The','Dog','Barked','Loudly'],1,'Parts of speech'],
+   ['Choose the correct form: “They ___ playing.”',['Is','Am','Are','Be'],2,'Grammar'],
+   ['What is the plural of “mouse”?',['Mouses','Mices','Mice','Mouse'],2,'Grammar'],
+   ['Choose the correct punctuation.',['Where are you.','Where are you?','Where are you,','Where are you!'],1,'Punctuation']
+  ]
+ };
+ const oldStart=window.startQuiz;
+ window.startQuiz=function(){
+  const key=examEl.value;
+  if(!key.startsWith('school_'))return oldStart();
+  const bank=schoolBank[key]||schoolBank.school_general;
+  activeQuestions=bank.slice();currentQ=0;answersNow={};
+  document.getElementById('quizIntro').classList.add('hidden');
+  document.getElementById('resultBox').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  document.getElementById('quizProgress').textContent='10 school-level questions';
+  drawQuestion();
+ };
+ document.getElementById('startQuiz').onclick=window.startQuiz;
+ // Keep school exam labels clear in results and progress.
+ const labelsMap={school_general:'School General Exam',school_math:'School Mathematics Exam',school_science:'School Science Exam',school_english:'School English Exam'};
+ const oldExamLabels=window.examLabels||{};
+ Object.assign(oldExamLabels,labelsMap);
+ window.examLabels=oldExamLabels;
+})();
+</script>
+</body></html>
