@@ -404,4 +404,43 @@ renderAll();
  window.buildRoadmap=window.buildRoadmap;
 })();
 </script>
+
+<script>
+/* Automatically choose sensible course and goal defaults from education level and stream. */
+(function(){
+ const level=document.getElementById('level');
+ const course=document.getElementById('course');
+ const goal=document.getElementById('goal');
+ if(!level||!course||!goal)return;
+ const defaults={
+  school:{course:'general',goal:'explore'},
+  intermediate:{course:'science',goal:'exam'},
+  diploma:{course:'cse',goal:'exam'},
+  ug:{course:'cse',goal:'software'},
+  pg:{course:'cse',goal:'data'},
+  career:{course:'cse',goal:'explore'}
+ };
+ function goalFor(levelValue,courseValue){
+  if(levelValue==='school')return 'explore';
+  if(levelValue==='intermediate')return courseValue==='commerce'?'business':'exam';
+  if(levelValue==='diploma')return ['cse'].includes(courseValue)?'software':(['ece','mechanical'].includes(courseValue)?'core':'exam');
+  if(levelValue==='ug')return courseValue==='commerce'?'business':(['ece','mechanical'].includes(courseValue)?'core':(courseValue==='science'?'data':'software'));
+  if(levelValue==='pg')return courseValue==='commerce'?'business':(['ece','mechanical'].includes(courseValue)?'core':'data');
+  if(levelValue==='career')return courseValue==='commerce'?'business':(['ece','mechanical'].includes(courseValue)?'core':(courseValue==='cse'?'software':'explore'));
+  return 'explore';
+ }
+ function setGoal(v){if([...goal.options].some(o=>o.value===v))goal.value=v;}
+ function setCourse(v){if([...course.options].some(o=>o.value===v))course.value=v;}
+ level.addEventListener('change',function(){
+  const d=defaults[level.value]||defaults.ug;
+  setCourse(d.course);
+  setGoal(d.goal);
+ });
+ course.addEventListener('change',function(){setGoal(goalFor(level.value,course.value));});
+ // Ensure saved profiles are consistent with the currently selected education level.
+ if(![...course.options].some(o=>o.value===course.value)){
+  const d=defaults[level.value]||defaults.ug;setCourse(d.course);setGoal(d.goal);
+ }
+})();
+</script>
 </body></html>
