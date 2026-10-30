@@ -301,4 +301,107 @@ renderAll();
  Object.assign(examLabels,labelsMap);
 })();
 </script>
+
+<script>
+/* Education-level-specific career guidance and learning roadmaps */
+(function(){
+ const levelPlans={
+ school:{
+  title:'School learning and exploration pathway',
+  intro:'Build strong school foundations first. Career ideas are exploratory at this stage; focus on curiosity, confidence and study habits rather than choosing a fixed profession.',
+  careers:['Explore science and technology','Explore mathematics and problem-solving','Explore languages, arts and communication'],
+  weeks:[
+   ['Strengthen core subjects','Revise the school topics you found difficult. Make short notes and ask a teacher about doubts.'],
+   ['Practise and understand','Complete short exercises in Mathematics, Science and English at your class level.'],
+   ['Explore through activities','Try a simple science experiment, maths puzzle, reading activity or beginner coding game.'],
+   ['Review and reflect','Retake a short practice quiz. Note what improved and which subjects you enjoy most.']
+  ],
+  tasks:['Study one difficult school topic for 20 minutes on four days.','Solve 10 class-level practice questions.','Complete one safe, age-appropriate learning activity with teacher or parent guidance.','Review quiz mistakes and set one subject goal.']
+ },
+ intermediate:{
+  title:'Intermediate / 11th–12th academic pathway',
+  intro:'Prioritize board-exam concepts and subject mastery. If you selected EAPCET/JEE, gradually add entrance-style problem solving alongside board preparation.',
+  careers:['Explore engineering and technology','Explore medicine and life sciences','Explore commerce, business and humanities'],
+  weeks:[
+   ['Concept revision','Revise the lowest-scoring Mathematics, Physics, Chemistry, Biology or language topics from your stream.'],
+   ['Board-style practice','Work through textbook examples and timed short-answer questions. Keep an error notebook.'],
+   ['Entrance preparation','If relevant, solve beginner EAPCET/JEE-style MCQs and analyse every incorrect answer.'],
+   ['Mock test and review','Take a short mixed mock test, compare topic scores and plan the next month.']
+  ],
+  tasks:['Create a weekly timetable for board subjects.','Revise two weak chapters and write summary notes.','Complete a timed practice set for your selected exam.','Review errors and schedule a mock test.']
+ },
+ diploma:{
+  title:'Diploma technical foundation pathway',
+  intro:'Combine semester subject preparation with practical technical skills. Choose projects that match your diploma branch and available lab resources.',
+  careers:['Explore technician and technologist roles','Explore lateral-entry engineering pathways','Explore branch-related practical careers'],
+  weeks:[
+   ['Semester fundamentals','Revise key concepts and diagrams from your weakest diploma subjects.'],
+   ['Applied practice','Solve numerical problems, circuit/design exercises or branch-specific practical questions.'],
+   ['Hands-on mini task','Complete a small supervised practical or simulation relevant to your branch.'],
+   ['Assessment and portfolio','Take a topic test, document your mini task and list skills to strengthen next.']
+  ],
+  tasks:['Prepare concise notes for two difficult modules.','Solve 10 branch-specific problems.','Complete one supervised lab or simulation activity.','Document the practical task with steps and results.']
+ },
+ ug:{
+  title:'Undergraduate degree and placement pathway',
+  intro:'Balance semester performance, core technical skills, projects and internships. Your selected exam and assessment gaps determine the first topics to prioritize.',
+  careers:['Explore software / technical roles','Explore data, AI and analytics roles','Explore higher studies and competitive exams'],
+  weeks:[
+   ['Repair foundational gaps','Revise your lowest-scoring assessment topics and connect them to current semester subjects.'],
+   ['Build technical depth','Practise coding, core branch concepts or quantitative aptitude according to your selected exam.'],
+   ['Apply through a project','Build a small project that demonstrates one skill and add a clear README or report.'],
+   ['Prepare for the next milestone','Take a retest, update your resume or study plan, and choose the next semester / placement goal.']
+  ],
+  tasks:['Revise two weak technical topics.','Complete a focused practice set or coding problems.','Build or improve one small branch-related project.','Retest and record your next placement or academic milestone.']
+ },
+ pg:{
+  title:'Postgraduate specialization pathway',
+  intro:'Deepen specialization, research and advanced problem-solving. Align your roadmap with your specialization, dissertation or professional objective.',
+  careers:['Explore specialist technical roles','Explore research and doctoral pathways','Explore advanced analytics or leadership roles'],
+  weeks:[
+   ['Specialization review','Identify prerequisite concepts behind your weakest topics and revisit trusted course material.'],
+   ['Advanced problem solving','Work through advanced exercises, papers or case studies in your specialization.'],
+   ['Research or applied work','Develop a small experiment, literature summary, prototype or case analysis.'],
+   ['Communicate outcomes','Prepare a short technical report, presentation or portfolio entry and assess remaining gaps.']
+  ],
+  tasks:['Review prerequisite concepts for one specialization topic.','Solve an advanced problem set or case study.','Complete one research or applied mini milestone.','Write a one-page summary of results and next steps.']
+ },
+ career:{
+  title:'Professional upskilling and career-transition pathway',
+  intro:'Focus on job-relevant skills, practical evidence and a portfolio. Use the selected professional or career-readiness test to prioritize learning.',
+  careers:['Explore a role aligned with current experience','Explore adjacent digital or technical roles','Explore project coordination and business roles'],
+  weeks:[
+   ['Choose a target skill','Select one role-relevant skill gap and define a measurable outcome.'],
+   ['Structured practice','Complete guided exercises and apply the skill to a realistic work scenario.'],
+   ['Portfolio evidence','Create a small case study, work sample or project demonstrating the skill.'],
+   ['Career readiness','Update your resume or portfolio, practise explaining your work and review progress.']
+  ],
+  tasks:['Choose one target role and one skill gap.','Complete two focused practice sessions.','Create one portfolio work sample.','Update your resume or profile with evidence of the new skill.']
+ }
+ };
+ const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const originalBuildCareer=window.buildCareer;
+ window.buildCareer=function(){
+  const p=state.profile||{},r=state.result,plan=levelPlans[p.level]||levelPlans.ug;
+  const interest=(p.interests||[]).join(', ')||'not specified';
+  const weak=(r?.weak||[]).join(', ')||'not identified yet';
+  const stream=({cse:'Computer Science / IT',ece:'Electronics / ECE',mechanical:'Mechanical engineering',commerce:'Commerce / Finance',science:'Science / Mathematics',arts:'Arts / Humanities',general:'general studies'}[p.course]||p.course||'your subject');
+  const goal=({software:'software development',data:'data and AI',exam:'academic improvement',core:'core engineering',business:'business and finance',explore:'career exploration'}[p.goal]||p.goal||'career exploration');
+  document.getElementById('careerMain').innerHTML='<h2>'+escape(plan.title)+'</h2><p class="muted">'+escape(plan.intro)+'</p><div class="tag">Education: '+escape(p.level||'undergraduate')+' · Stream: '+escape(stream)+'</div>';
+  document.getElementById('careerWhy').innerHTML='<p>'+escape(plan.intro)+'</p><p><b>Selected goal:</b> '+escape(goal)+'<br><b>Interests:</b> '+escape(interest)+'<br><b>Assessment focus:</b> '+escape(r?((r.examType||'selected exam')+' · '+r.score+'% score'):'Complete your selected exam assessment')+'<br><b>Topics to improve:</b> '+escape(weak)+'</p><p class="muted">These are age- and education-appropriate directions to explore, not guaranteed career outcomes. A school student should explore subjects and interests before selecting a profession.</p>';
+  document.getElementById('careerOptions').innerHTML=plan.careers.map((c,i)=>'<div class="card"><h3>'+escape(c)+'</h3><p class="muted">'+(i===0?'First area to explore':i===1?'Alternative area to explore':'Another possible direction')+' based on the selected education level. Match it with personal interests and real learning experiences.</p></div>').join('');
+ };
+ const originalBuildRoadmap=window.buildRoadmap;
+ window.buildRoadmap=function(){
+  const p=state.profile||{},r=state.result,plan=levelPlans[p.level]||levelPlans.ug;
+  const weak=(r?.weak||[]);
+  const weekGrid=document.getElementById('weekGrid'),intro=document.getElementById('roadmapIntro'),taskList=document.getElementById('taskList');
+  intro.innerHTML='<b>'+escape(plan.title)+'</b><br>'+escape(plan.intro)+'<br><br><b>Personal focus:</b> '+escape(weak.length?weak.join(', '):'Complete the assessment to identify topics to improve')+'<br><b>Study time:</b> '+escape(p.hours||'5')+' hours per week · <b>Exam:</b> '+escape((window.examLabels&&window.examLabels[p.examType])||p.examType||'Not selected');
+  weekGrid.innerHTML=plan.weeks.map((w,i)=>'<div class="week"><span>WEEK '+(i+1)+'</span><b>'+escape(w[0])+'</b><p>'+escape(w[1])+'</p></div>').join('');
+  taskList.innerHTML=plan.tasks.map((t,i)=>'<label class="choice"><input type="checkbox" '+(state.tasks['level_'+p.level+'_'+i]?'checked':'')+' onchange="state.tasks[\'level_'+p.level+'_'+i+'\']=this.checked;save();renderAll()"><span>'+escape(t)+'</span></label>').join('');
+ };
+ window.buildCareer=window.buildCareer;
+ window.buildRoadmap=window.buildRoadmap;
+})();
+</script>
 </body></html>
